@@ -1,31 +1,37 @@
-import axios from 'axios';
-import qs from 'qs';
+import axios from "axios";
+import qs from "qs";
 
-const baseUrl = 'http://localhost:3000';
+const baseUrl = "http://localhost:3000";
 
 // axios config options
 const options = {
   baseURL: baseUrl,
   timeout: 10000,
-  // 查询对象序列化函数
   paramsSerializer: (params) => qs.stringify(params),
 };
 
 const AxiosInstance = axios.create(options);
 
-export async function getTodos(params) {
-  const res = await AxiosInstance.get(`/getTodos`, params);
-  if (res.data) {
-    const result = res.data.map((item) => ({
-      id: item._id,
-      text: item.todo,
-      isDone: false,
-      isEditing: false,
-      isStarred: false,
-    }));
-    return result.reverse();
-  }
-  return [];
+export async function getTodos(fetchTodosRequest, fetchTodosFailure) {
+  fetchTodosRequest();
+  return await AxiosInstance.get(
+    `https://5ecf536d16017c00165e2996.mockapi.io/api/v1/todos/`
+  )
+    .then((res) => {
+      if (res.data) {
+        const result = res.data.map((item) => ({
+          id: item._id,
+          text: item.todo,
+          isDone: false,
+          isEditing: false,
+          isStarred: false,
+        }));
+        return result.reverse();
+      }
+    })
+    .catch((error) => {
+      fetchTodosFailure(error.message);
+    });
 }
 
 export async function postTodo(params) {
